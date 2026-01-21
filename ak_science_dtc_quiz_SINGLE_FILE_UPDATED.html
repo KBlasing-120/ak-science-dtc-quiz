@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alaska Science – DTC Training: Section Check-ins (Single File)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+  :root { --bg:#0b1b27; --surface:#112636; --card:#16384f; --text:#e7eef5; --muted:#a7bfce; --primary:#00a0dc; --primary-600:#0079a6; --ok:#2ecc71; --warn:#f39c12; --error:#e74c3c; }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,#0b1b27 0%,#0d2230 100%)}
+  .app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid #0f3349;position:sticky;top:0;z-index:10}
+  .brand{display:flex;align-items:center;gap:12px}.brand h1{font-size:1.1rem;margin:0}.subtitle{margin:0;color:var(--muted);font-size:.9rem}
+  .menu-btn{background:transparent;border:1px solid #2b4a60;color:var(--text);padding:6px 10px;border-radius:6px;cursor:pointer}
+  .container{display:grid;grid-template-columns:280px 1fr;gap:16px;padding:16px}
+  .sidebar{background:var(--surface);border:1px solid #0f3349;border-radius:12px;padding:12px;height:calc(100vh - 120px);position:sticky;top:68px;overflow:auto}
+  .section-list{list-style:none;padding:0;margin:8px 0}
+  .section-list li{margin:4px 0}
+  .section-list button{width:100%;text-align:left;padding:10px;background:transparent;border:1px solid #274357;color:var(--text);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .section-list button:hover{background:#17384d}.section-list .done{border-color:var(--ok)}.section-list .badge{font-size:.75rem;color:#0b1b27;background:var(--muted);border-radius:999px;padding:2px 8px}
+  .search-wrap{display:flex}.search-wrap input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #274357;background:#0f2a3b;color:var(--text)}
+  .main{min-height:60vh}.card{background:var(--card);border:1px solid #0f3349;border-radius:12px;padding:18px}.hidden{display:none}.muted{color:var(--muted)}.pill{background:#0f2a3b;border:1px solid #274357;color:var(--muted);padding:4px 8px;border-radius:999px;font-size:.8rem}
+  .questions{display:grid;gap:16px;margin-top:12px}.q{background:#142f42;border:1px solid #21445b;padding:14px;border-radius:10px}.q h3{margin:0 0 8px 0;font-size:1rem}.q .type{font-size:.8rem;color:var(--muted)}.q .explain{background:#0f2a3b;border-left:3px solid #2e7fb1;padding:10px;margin-top:10px;border-radius:6px;display:none}
+  .correct{border-color:var(--ok)}.incorrect{border-color:var(--error)}.partial{border-color:var(--warn)}
+  .actions{display:flex;align-items:center;gap:8px;margin-top:12px}.primary{background:var(--primary);color:#001620;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}.primary:hover{background:var(--primary-600)}
+  .secondary{background:transparent;border:1px solid #2b4a60;color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}.link{background:transparent;border:none;color:var(--primary);cursor:pointer;text-decoration:underline}.link.danger{color:#ff7675}
+  .quiz-header{display:flex;align-items:center;justify-content:space-between}.cta-row{margin-top:16px;display:flex;gap:8px}.spacer{flex:1}
+  label.choice{display:flex;gap:8px;align-items:center;padding:6px;cursor:pointer}.opt{background:#103042;border:1px solid #224a61;padding:8px 10px;border-radius:8px;margin-top:6px}
+  textarea{width:100%;min-height:90px;padding:10px;border-radius:8px;border:1px solid #274357;background:#0f2a3b;color:var(--text)}
+  .app-footer{margin:16px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  @media (max-width:900px){.container{grid-template-columns:1fr}.sidebar{position:relative;height:auto}}
+  </style>
+</head>
+<body>
+  <header class="app-header" role="banner">
+    <div class="brand">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='none' stroke='%2300568f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 22h18'/%3E%3Cpath d='M7 22V8l5-5 5 5v14'/%3E%3Cpath d='M14 13h-4'/%3E%3C/svg%3E" alt="icon" aria-hidden="true"/>
+      <div>
+        <h1>Alaska Science – DTC Training</h1>
+        <p class="subtitle">Interactive formative checks</p>
+      </div>
+    </div>
+    <nav aria-label="Primary">
+      <button id="menuToggle" class="menu-btn" aria-expanded="false" aria-controls="sidebar">☰ Menu</button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <aside id="sidebar" class="sidebar" aria-label="Sections">
+      <div class="search-wrap">
+        <input id="sectionSearch" type="search" placeholder="Filter sections…" aria-label="Filter sections" />
+      </div>
+      <ul id="sectionList" class="section-list" role="list"></ul>
+      <div class="sidebar-footer">
+        <button id="resetProgress" class="link danger">Reset progress</button>
+        <button id="exportResults" class="link">Export results</button>
+      </div>
+    </aside>
+
+    <main id="main" class="main" tabindex="-1">
+      <section id="welcome" class="card">
+        <h2>Welcome</h2>
+        <ol>
+          <li><strong>Select a section from the left when instructed.</strong> Do not jump ahead and complete other sections until it's been presented.</li>
+          <li>Answer the questions (Multiple Choice, Multi‑select, Open response).</li>
+          <li>Click <strong>Check answers</strong> for instant feedback and explanations.</li>
+        </ol>
+        <p>Your progress saves in your browser. You can export a JSON summary at any time.</p>
+        <div class="cta-row">
+          <button id="startBtn" class="primary">Start</button>
+        </div>
+      </section>
+
+      <section id="quiz" class="card hidden" aria-live="polite">
+        <div class="quiz-header">
+          <div>
+            <h2 id="sectionTitle"></h2>
+            <p id="sectionDesc" class="muted"></p>
+          </div>
+          <div class="pill" id="sectionProgress"></div>
+        </div>
+
+        <div id="questionContainer" class="questions" role="group" aria-describedby="sectionDesc"></div>
+
+        <div class="actions">
+          <button id="prevSection" class="secondary">◀ Prev</button>
+          <div class="spacer"></div>
+          <button id="checkAnswers" class="primary">Check answers</button>
+          <button id="finishBtn" class="secondary hidden">Finish</button>
+          <button id="nextSection" class="secondary">Next ▶</button>
+        </div>
+      </section>
+
+      <section id="summary" class="card hidden">
+        <h2>Training Summary</h2>
+        <div id="summaryContent"></div>
+        <div class="cta-row">
+          <button id="reviewMissed" class="primary">Review missed items</button>
+        </div>
+      </section>
+
+      <section id="closing" class="card hidden">
+        <h2>Closing</h2>
+        <p id="closingStats" class="muted"></p>
+        <div class="cta-row">
+          <button id="restart" class="secondary">Restart</button>
+          <button id="exportResults2" class="primary">Export results</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="app-footer" role="contentinfo">
+    <div>Built for the Alaska Science DTC training.</div>
+    <div class="foot-right">
+      <button id="printView" class="link">Print view</button>
+    </div>
+  </footer>
+
+  <script>
+  // === questions.js (updated per latest request) ===
+  const SECTIONS = [
+    {
+      id: 'overview_supports',
+      title: 'Overview + Student Supports & Accommodations',
+      desc: 'Structure, item formats, parts/timing, and core supports (TTS, POD, LP/Braille, verification).',
+      questions: [
+        { id: 'c1', type: 'ms',
+          prompt: 'Select all statements that accurately describe the Alaska Science Assessment.',
+          options: [
+            'It is a fixed-form summative assessment.',
+            'Each grade has 3 parts with 17 items in each part (≈40 minutes per part).',
+            'It is computer-adaptive and varies item counts per student.',
+            'Each part includes a mix of standalone and cluster-based item sets.'
+          ],
+          answer: [0,1,3],
+          explanation: 'Fixed-form; 3×17 (~40 mins/part); includes both standalone and cluster-based sets (not CAT).'
+        },
+        { id: 'c3', type: 'ms',
+          prompt: 'Item formats: choose all that apply to this assessment.',
+          options: ['Multiple choice (MC)', 'Constructed response (CR)', 'Multi-select (MS)', 'Technology-enhanced (TE)'],
+          answer: [0,2,3],
+          explanation: 'MC, MS, and TE are used; constructed response is not listed.'
+        },
+        { id: 'c4', type: 'open',
+          prompt: 'In your own words, contrast cluster-based item sets with standalone items. Include how scenarios are used.',
+          exemplar: 'Cluster-based sets present a scenario with multiple linked questions; standalone items have context tied to a single question.'
+        },
+        { id: 'c6', type: 'ms',
+          prompt: 'A student completed Part 1 and will return for Parts 2 and 3. Which actions are required/accurate?',
+          options: [
+            'Log back in using the same username and password on the same test ticket.',
+            'Completed parts will appear grayed out and marked “completed.”',
+            'A new test ticket must be generated for each remaining part.',
+            'The student must start from Part 1 again.'
+          ],
+          answer: [0,1],
+          explanation: 'Same credentials/ticket; completed parts are marked. No restart or new tickets needed.'
+        },
+        { id: 'c8', type: 'ms',
+          prompt: 'Print on Demand (POD): select all correct roles/processes.',
+          options: [
+            'Only DTCs can print POD assessments.',
+            'POD accommodations should be assigned via the PRI file or accommodations tab.',
+            'After testing, POD forms are transcribed into INSIGHT and locally destroyed.',
+            'Any Test Administrator can print POD as needed.'
+          ],
+          answer: [0,1,2],
+          explanation: 'Only DTCs can print; POD must be assigned; transcribe to INSIGHT and securely destroy locally after testing.'
+        },
+        { id: 'c9', type: 'ms',
+          prompt: 'Large Print (LP) & Braille: choose all accurate statements.',
+          options: [
+            'DTC orders LP/Braille materials in the DRC INSIGHT Portal.',
+            'Assign POD so the correct transcription form is spiraled for these students.',
+            'Regular print test booklets are included in LP/Braille kits.',
+            'The transcriber uses the student’s test ticket to input responses into the Test Engine.'
+          ],
+          answer: [0,1,3],
+          explanation: 'Order via Portal; assign POD; no regular print booklet; use the student test ticket for transcription.'
+        },
+        { id: 'c11', type: 'mc',
+          prompt: 'Which change DOES NOT require reprinting a test ticket?',
+          options: [
+            'Adding TTS to a student after tickets were printed',
+            'Switching from SPN (non-embedded) to no accommodations',
+            'Correcting a student’s name spelling',
+            'Regenerating a ticket as part of TTS scenario handling before reprinting'
+          ],
+          answer: 1,
+          explanation: 'SPN (non-embedded) changes do not affect the online form; TTS changes do and require regenerated/reprinted tickets.'
+        },
+        { id: 'c12', type: 'open',
+          prompt: 'Give one pitfall to avoid when enabling TTS late and one best-practice step to confirm the accommodation before test day.',
+          exemplar: 'Pitfall: Not regenerating/reprinting tickets after adding TTS. Best practice: Verify TTS on roster and the printed ticket prior to test day.'
+        }
+      ]
+    },
+    {
+      id: 'portal',
+      title: 'DRC INSIGHT Portal Essentials',
+      desc: 'Landing page, Site Selector, in-app Online Help, side navigation.',
+      questions: [
+        { id: 'po1_new', type: 'ms',
+          prompt: 'Select all accurate statements about in-portal navigation aids and resources.',
+          options: [
+            'The side navigation panel can be toggled on/off and does not auto-display in PSM apps.',
+            'The in-app Online Help (?) opens in a new tab with a table of contents.',
+            'The Site Selector is available only on the landing page and does not persist across apps.',
+            'DTCs can select ALL SCHOOLS from the Site Selector to work across schools.'
+          ],
+          answer: [0,1,3],
+          explanation: 'Side nav toggle exists and is off by default; Online Help (?) opens with TOC; Site Selector persists and supports ALL SCHOOLS for DTCs.'
+        },
+        { id: 'po2', type: 'mc',
+          prompt: 'Where can you find step-by-step directions within Portal screens?',
+          options: ['Under the question-mark (?) Online Help', 'Only in the printed TCM', 'Only on external DRC websites', 'Directions are not provided'],
+          answer: 0,
+          explanation: 'Use the in-app Online Help via the (?) icon; opens in a new tab with a TOC.'
+        }
+      ]
+    },
+    {
+      id: 'import',
+      title: 'Import Management & PRI',
+      desc: 'Auto-registration, accommodations encoding, and 2026 layout updates.',
+      questions: [
+        { id: 'im1', type: 'mc',
+          prompt: 'What happens after a successful PRI import?',
+          options: [
+            'Nothing until a user manually creates registrations',
+            'An auto-registration process assigns students to assessments and registrations',
+            'Students are marked completed',
+            'Accommodations are ignored'
+          ],
+          answer: 1,
+          explanation: 'PRI triggers auto-registration.'
+        },
+        { id: 'im2', type: 'ms',
+          prompt: 'In the PRI file, which statements are true?',
+          options: [
+            'Accommodations use codes like TTS, POD, and SPN',
+            'Multiple accommodations are pipe-delimited',
+            'Special circumstances can be uploaded after testing via a new PRI',
+            'Ethnicity/race are indicated by number within the state-defined optional field'
+          ],
+          answer: [0,1,3],
+          explanation: 'Use TTS/POD/SPN; pipe for multiples; SCC not updatable via PRI after testing; ethnicity/race numeric.'
+        },
+        { id: 'im3', type: 'mc',
+          prompt: '2026 updates added which new PRI columns?',
+          options: [
+            'Alternate district and alternate school',
+            'Student email and homeroom',
+            'Testing day and time block',
+            'Guardian consent flag'
+          ],
+          answer: 0,
+          explanation: 'Supports testing at a different district/school (e.g., correspondence students).'
+        },
+        { id: 'im4', type: 'ms',
+          prompt: 'Registration grouping via PRI (column AA): select all correct.',
+          options: [
+            'Leaving AA blank places students in generic grade-level registrations',
+            'Populating AA groups students into specific registrations by the provided name',
+            'AA accepts letters/numbers up to 100 characters',
+            'AA can only be used by DEED'
+          ],
+          answer: [0,1,2],
+          explanation: 'AA is optional and flexible for local grouping.'
+        }
+      ]
+    },
+    {
+      id: 'participant_tts',
+      title: 'Participant Management & Text-to-Speech Scenarios',
+      desc: 'Bulk operations and TTS procedures (late enablement and mid-test remediation).',
+      questions: [
+        { id: 'pm1_one', type: 'open',
+          prompt: 'Describe one bulk operation available in Participant Management at the school level.',
+          exemplar: 'Example: Bulk add or remove accommodations for multiple participants.'
+        },
+        { id: 'pm2', type: 'ms',
+          prompt: 'Choose all ways to verify accommodations were assigned correctly.',
+          options: [
+            'Participant > Accommodations tab',
+            'Registration > Details / Participant(s) List / Print Test Tickets',
+            'Report Delivery > Status Reports (Daily Cumulative)',
+            'ISR after score release before testing'
+          ],
+          answer: [0,1,2],
+          explanation: 'Tickets/roster, Participant Mgmt, Registration, and Status Reports; ISRs are post-testing.'
+        },
+        { id: 'tt1', type: 'mc',
+          prompt: 'A week before testing, two students need TTS but tickets were already printed. What should the DTC do?',
+          options: [
+            'Wait until test day and call DRC',
+            'Add TTS manually; tickets regenerate automatically and should be reprinted',
+            'Delete the students and re-import the PRI',
+            'No action needed; TTS is universal'
+          ],
+          answer: 1,
+          explanation: 'Add TTS via accommodations; it affects the online form and regenerates tickets for reprinting.'
+        },
+        { id: 'tt2', type: 'ms',
+          prompt: 'During Part 2, a student notices TTS is missing. Select the recommended steps (optional workflow).',
+          options: [
+            'Student stops testing; TA notifies BTC; BTC contacts DTC',
+            'In Registration, first regenerate test ticket, then apply TTS',
+            'Remove student from registration and start over',
+            'Reprint ticket and verify TTS on roster'
+          ],
+          answer: [0,1,3],
+          explanation: 'Stop, notify; regenerate ticket, apply TTS; reprint and verify.'
+        }
+      ]
+    },
+    {
+      id: 'registration',
+      title: 'Registration',
+      desc: 'Printing test tickets and applying Special Circumstance Codes (SCCs) in bulk.',
+      questions: [
+        { id: 'ttk1', type: 'ms',
+          prompt: 'Select all valid ways to print test tickets.',
+          options: [
+            'From a specific registration’s Details tab',
+            'From Registered Participants',
+            'From View Registrations (Print All Tickets)',
+            'Only via Customer Service request'
+          ],
+          answer: [0,1,2],
+          explanation: 'Multiple in-portal locations; CS is not required.'
+        },
+        { id: 'ttk2', type: 'mc',
+          prompt: 'The Update Testing Codes button allows…',
+          options: [
+            'Bulk application of special circumstance codes (SCCs)',
+            'Creating new accommodations',
+            'Changing roster layouts',
+            'Editing blueprint strands'
+          ],
+          answer: 0,
+          explanation: 'Apply SCCs in bulk from View Registrations or Registered Participants.'
+        }
+      ]
+    },
+    {
+      id: 'transfer_scenarios',
+      title: 'Transfer Scenarios',
+      desc: 'Permissions and procedures for school↔district transfers and correspondence students.',
+      questions: [
+        { id: 'ts1', type: 'mc',
+          prompt: 'Transfer permissions change for BTCs in 2026:',
+          options: [
+            'BTCs retain full transfer permissions',
+            'BTC transfer permissions were removed',
+            'BTCs approve district-to-district transfers',
+            'No change from 2025'
+          ],
+          answer: 1,
+          explanation: 'BTC set no longer includes transfer permissions; DTCs perform required transfers.'
+        },
+        { id: 'ts2', type: 'open',
+          prompt: 'Outline one valid school-to-school transfer method (Option 1, 2, or 3).',
+          exemplar: 'Option 1 (bulk): upload a new PRI with updated site info—student is removed from Not Started registrations at sending school and placed in a new registration at receiving school.'
+        },
+        { id: 'ts3', type: 'ms',
+          prompt: 'Correspondence student testing at another site: select all correct steps.',
+          options: [
+            'Assign alternate district and school codes (new PRI columns / Details tab)',
+            'Keep the student in a registration at the enrolling district during testing',
+            'Ensure the student is in a registration at the testing site so that site can print the ticket',
+            'Score report ownership remains with the enrolling (correspondence) district'
+          ],
+          answer: [0,2,3],
+          explanation: 'Use alternate-site fields; register at testing site; results remain with enrolling district.'
+        },
+        { id: 'ts4', type: 'ms',
+          prompt: 'During the test window, a student transfers after completing Part 1. Select the best next steps.',
+          options: [
+            'Contact DRC or DEED for next steps due to partial completion',
+            'Remove the student from all registrations and start a new form',
+            'Proceed with a standard PRI import only',
+            'Confirm whether remaining parts can be completed at the receiving site per guidance'
+          ],
+          answer: [0,3],
+          explanation: 'Partial completion requires coordination; confirm completion plan with DRC/DEED.'
+        },
+        { id: 'ts5', type: 'mc',
+          prompt: 'District-to-district before the window: which is valid without contacting Customer Service?',
+          options: [
+            'DTC at the receiving district requests and completes the transfer in Participant Management',
+            'Only DEED can perform such transfers',
+            'BTCs can complete transfers using their default permissions',
+            'Only after test tickets are printed'
+          ],
+          answer: 0,
+          explanation: 'DTCs can perform inter-district transfers without approval; BTC transfer permissions were removed.'
+        }
+      ]
+    }
+  ];
+  </script>
+
+  <script>
+  // === app.js (single-file build) ===
+  const sectionListEl = document.getElementById('sectionList');
+  const sectionSearchEl = document.getElementById('sectionSearch');
+  const startBtn = document.getElementById('startBtn');
+  const quizEl = document.getElementById('quiz');
+  const welcomeEl = document.getElementById('welcome');
+  const summaryEl = document.getElementById('summary');
+  const closingEl = document.getElementById('closing');
+  const questionContainer = document.getElementById('questionContainer');
+  const sectionTitle = document.getElementById('sectionTitle');
+  const sectionDesc = document.getElementById('sectionDesc');
+  const sectionProgress = document.getElementById('sectionProgress');
+  const prevBtn = document.getElementById('prevSection');
+  const nextBtn = document.getElementById('nextSection');
+  const finishBtn = document.getElementById('finishBtn');
+  const checkBtn = document.getElementById('checkAnswers');
+  const resetBtn = document.getElementById('resetProgress');
+  const exportBtn = document.getElementById('exportResults');
+  const reviewMissedBtn = document.getElementById('reviewMissed');
+  const printBtn = document.getElementById('printView');
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const exportBtn2 = document.getElementById('exportResults2');
+  const restartBtn = document.getElementById('restart');
+
+  const STORAGE_KEY = 'ak_sci_dtc_progress_v1';
+  let state = loadState();
+  let currentSectionIdx = 0;
+
+  function loadState(){
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : { answers:{}, scores:{}, completed:{} }; }
+    catch(e){ return { answers:{}, scores:{}, completed:{} }; }
+  }
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  function buildSidebar(){
+    sectionListEl.innerHTML = '';
+    SECTIONS.forEach((s, idx) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.setAttribute('data-idx', idx);
+      const done = state.completed[s.id];
+      btn.className = done ? 'done' : '';
+      btn.innerHTML = `<span>${idx+1}. ${s.title}</span><span class="badge">${scoreLabel(s.id)}</span>`;
+      btn.addEventListener('click', () => navigateTo(idx));
+      li.appendChild(btn);
+      sectionListEl.appendChild(li);
+    });
+  }
+  function scoreLabel(sectionId){ const sc = state.scores[sectionId]; return sc? `${Math.round((sc.correct/Math.max(1,sc.total))*100)}%` : '0%'; }
+  function filterSidebar(){ const q = sectionSearchEl.value.toLowerCase(); [...sectionListEl.querySelectorAll('li')].forEach(li=>{ li.style.display = li.textContent.toLowerCase().includes(q)? '' : 'none'; }); }
+  sectionSearchEl.addEventListener('input', filterSidebar);
+
+  function renderSection(){
+    const s = SECTIONS[currentSectionIdx];
+    sectionTitle.textContent = s.title; sectionDesc.textContent = s.desc; sectionProgress.textContent = `${currentSectionIdx+1} / ${SECTIONS.length}`;
+    questionContainer.innerHTML = '';
+
+    s.questions.forEach((q, qi) => {
+      const qWrap = document.createElement('div'); qWrap.className='q'; qWrap.id=`q_${q.id}`;
+      qWrap.innerHTML = `<div class="type">${typeLabel(q.type)}</div><h3>${qi+1}. ${q.prompt}</h3>`;
+      if(q.type==='mc') q.options.forEach((opt,oi)=>{ const id=`${q.id}_opt_${oi}`; const optDiv=document.createElement('div'); optDiv.className='opt'; optDiv.innerHTML = `<label class="choice" for="${id}"><input type="radio" name="${q.id}" id="${id}" value="${oi}"> <span>${opt}</span></label>`; qWrap.appendChild(optDiv); });
+      if(q.type==='ms') q.options.forEach((opt,oi)=>{ const id=`${q.id}_opt_${oi}`; const optDiv=document.createElement('div'); optDiv.className='opt'; optDiv.innerHTML = `<label class="choice" for="${id}"><input type="checkbox" name="${q.id}" id="${id}" value="${oi}"> <span>${opt}</span></label>`; qWrap.appendChild(optDiv); });
+      if(q.type==='open'){ const ta=document.createElement('textarea'); ta.name=q.id; ta.placeholder='Type your response…'; qWrap.appendChild(ta); }
+      const exp=document.createElement('div'); exp.className='explain'; exp.id=`exp_${q.id}`; const note=q.explanation?`<p><strong>Why:</strong> ${q.explanation}</p>`:''; const ex=q.exemplar?`<p><strong>Exemplar:</strong> ${q.exemplar}</p>`:''; exp.innerHTML=note+ex; qWrap.appendChild(exp);
+      questionContainer.appendChild(qWrap);
+      const saved = (state.answers[s.id]||{})[q.id];
+      if(saved!==undefined){ if(q.type==='mc'){ const r=qWrap.querySelector(`input[type=radio][value="${saved}"]`); if(r) r.checked=true; } else if(q.type==='ms'){ (Array.isArray(saved)?saved:[]).forEach(v=>{ const cb=qWrap.querySelector(`input[type=checkbox][value="${v}"]`); if(cb) cb.checked=true; }); } else if(q.type==='open'){ qWrap.querySelector('textarea').value = saved||''; } }
+    });
+
+    prevBtn.disabled = currentSectionIdx===0; nextBtn.disabled = currentSectionIdx===SECTIONS.length-1;
+    // Show Finish button on last section
+    if(currentSectionIdx===SECTIONS.length-1){ finishBtn.classList.remove('hidden'); nextBtn.classList.add('hidden'); }
+    else { finishBtn.classList.add('hidden'); nextBtn.classList.remove('hidden'); }
+  }
+
+  function typeLabel(t){ return ({ mc:'Multiple Choice', ms:'Multi‑select', open:'Open response' })[t] || t; }
+  function navigateTo(idx){ currentSectionIdx=idx; welcomeEl.classList.add('hidden'); summaryEl.classList.add('hidden'); closingEl.classList.add('hidden'); quizEl.classList.remove('hidden'); renderSection(); buildSidebar(); document.getElementById('main').focus(); }
+  function firstSection(){ navigateTo(0); }
+
+  function collectAnswers(){
+    const s=SECTIONS[currentSectionIdx]; const ans= state.answers[s.id]||{};
+    s.questions.forEach(q=>{
+      if(q.type==='mc'){ const chosen=document.querySelector(`#q_${q.id} input[type=radio]:checked`); ans[q.id]=chosen?Number(chosen.value):undefined; }
+      if(q.type==='ms'){ const chosen=[...document.querySelectorAll(`#q_${q.id} input[type=checkbox]:checked`)].map(e=>Number(e.value)); ans[q.id]=chosen; }
+      if(q.type==='open'){ const val=(document.querySelector(`#q_${q.id} textarea`).value||'').trim(); ans[q.id]=val; }
+    });
+    state.answers[s.id]=ans; saveState();
+  }
+
+  function arraysEqual(a,b){ if(!Array.isArray(a)||!Array.isArray(b)) return false; if(a.length!==b.length) return false; const as=[...a].sort(); const bs=[...b].sort(); return as.every((v,i)=>v===bs[i]); }
+
+  function gradeSection(){
+    const s=SECTIONS[currentSectionIdx]; let total=0, correct=0, partial=0;
+    s.questions.forEach(q=>{
+      const wrap=document.getElementById(`q_${q.id}`); const exp=document.getElementById(`exp_${q.id}`); wrap.classList.remove('correct','incorrect','partial');
+      if(q.type==='mc'){ total+=1; const val=state.answers[s.id]?.[q.id]; if(val===undefined){wrap.classList.add('incorrect');} else if(val===q.answer){correct+=1;wrap.classList.add('correct');} else {wrap.classList.add('incorrect');} exp.style.display='block'; }
+      if(q.type==='ms'){ total+=1; const val=state.answers[s.id]?.[q.id]||[]; if(arraysEqual(val,q.answer)){correct+=1;wrap.classList.add('correct');} else if(val.length>0 && q.answer.some(v=>val.includes(v))){partial+=1;wrap.classList.add('partial');} else {wrap.classList.add('incorrect');} exp.style.display='block'; }
+      if(q.type==='open'){ exp.style.display='block'; }
+    });
+    state.scores[s.id]={ total, correct, partial }; state.completed[s.id]=true; saveState(); buildSidebar();
+  }
+
+  function next(){ if(currentSectionIdx<SECTIONS.length-1){ navigateTo(currentSectionIdx+1);} }
+  function prev(){ if(currentSectionIdx>0){ navigateTo(currentSectionIdx-1);} }
+
+  function exportResultsNow(){
+    const payload={ generatedAt:new Date().toISOString(), sections: SECTIONS.map((s,idx)=>({ index:idx+1,id:s.id,title:s.title,desc:s.desc, score:state.scores[s.id]||{total:0,correct:0,partial:0}, answers:state.answers[s.id]||{} })) };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ak_science_dtc_results.json'; a.click(); URL.revokeObjectURL(url);
+  }
+
+  function showSummary(){ welcomeEl.classList.add('hidden'); quizEl.classList.add('hidden'); closingEl.classList.add('hidden'); summaryEl.classList.remove('hidden'); const container=document.getElementById('summaryContent'); const scoredItems=SECTIONS.reduce((a,s)=>a+(state.scores[s.id]?.total||0),0); const correctItems=SECTIONS.reduce((a,s)=>a+(state.scores[s.id]?.correct||0),0); const pct=scoredItems?Math.round((correctItems/scoredItems)*100):0; container.innerHTML=`<p><strong>Overall (scored items only):</strong> ${correctItems}/${scoredItems} = ${pct}%</p>`; }
+
+  function showClosing(){ welcomeEl.classList.add('hidden'); quizEl.classList.add('hidden'); summaryEl.classList.add('hidden'); closingEl.classList.remove('hidden'); const scoredItems=SECTIONS.reduce((a,s)=>a+(state.scores[s.id]?.total||0),0); const correctItems=SECTIONS.reduce((a,s)=>a+(state.scores[s.id]?.correct||0),0); const pct=scoredItems?Math.round((correctItems/scoredItems)*100):0; document.getElementById('closingStats').textContent=`Total correct answers: ${correctItems} out of ${scoredItems} (${pct}%).`; }
+
+  // Events
+  startBtn?.addEventListener('click', firstSection);
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+  finishBtn.addEventListener('click', () => { collectAnswers(); gradeSection(); showClosing(); });
+  checkBtn.addEventListener('click', () => { collectAnswers(); gradeSection(); });
+  exportBtn.addEventListener('click', exportResultsNow);
+  exportBtn2?.addEventListener('click', exportResultsNow);
+  printBtn.addEventListener('click', () => window.print());
+  resetBtn.addEventListener('click', () => { if(!confirm('Reset all saved answers and scores?')) return; state={answers:{},scores:{},completed:{}}; saveState(); buildSidebar(); renderSection(); });
+  reviewMissedBtn.addEventListener('click', () => { for(let i=0;i<SECTIONS.length;i++){ const s=SECTIONS[i]; const sc=state.scores[s.id]; if(sc && sc.total && sc.correct<sc.total){ navigateTo(i); return; } } navigateTo(0); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='ArrowRight' && !nextBtn.disabled){ next(); } if(e.key==='ArrowLeft' && !prevBtn.disabled){ prev(); } });
+  menuToggle.addEventListener('click', ()=>{ const open=sidebar.style.display!=='none'; sidebar.style.display=open?'none':'block'; menuToggle.setAttribute('aria-expanded',(!open).toString()); });
+
+  // Initialize
+  buildSidebar();
+  </script>
+</body>
+</html>
